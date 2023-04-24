@@ -10,7 +10,7 @@ cards:
     annualfee: $0
     cashback: 1.5%
     creditlevel: Excellent
-    flagkey: 
+    flagkey: mosey_bank_unlimited_card
   - name: Mosey Bank Flex
     image: /static/img/credit-card-1369111_640.png
     captionpre: Earn unlimited 
