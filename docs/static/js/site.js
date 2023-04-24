@@ -11,6 +11,21 @@ function initializeUserAttribute(user, attribute, defaultValue, value) {
     }
 }
 
+function getUserContext(userData, ua) {
+    var optiSdk = Alpine.store('optiSdk');
+    if (optiSdk === null) {
+        console.log("NULL optiSdk");
+        return null;
+    }
+
+    if (optiSdk.client === null) {
+        console.log("NULL optiSdk.client");
+        return null;
+    }
+
+    return Alpine.store('optiSdk').client.createUserContext(userData.uid, ua);
+}
+
 function checkLocalStorage(key, defaultVal) {
     var storageKey = localStorage.getItem(key);
     if (storageKey == null) {
@@ -29,9 +44,9 @@ document.addEventListener('alpine:init', () => {
     
     Alpine.store('sdkReady', {
         isLoaded: true
-        });
+    });
 
-        Alpine.store('optiSdk', {
+    Alpine.store('optiSdk', {
         init() {
             this.fetchSdk(localStorage.getItem('sdk'))
         },
@@ -88,6 +103,7 @@ document.addEventListener('alpine:init', () => {
                     const config = optimizelyClient.getOptimizelyConfig();
                     console.log('New datafile retrieved.');
                     Alpine.store('optiSdk').clientVersion += 1;
+                    console.log(Alpine.store('optiSdk').clientVersion);
                 }
 
                 optimizelyClient.notificationCenter.addNotificationListener(window.optimizelySdk.enums.NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE, onConfigUpdateListener);
@@ -111,7 +127,7 @@ document.addEventListener('alpine:init', () => {
             }); */
             }
         }
-        });
+    });
         
     Alpine.store('user', {
         init() {

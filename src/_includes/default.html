@@ -42,21 +42,20 @@
                 {{title}}
               </strong>
             </h1>
-              {{ content | safe }}
-              <script src="/static/js/alpine.js"></script>
-              <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.4/flowbite.min.js"></script>
+            {{ content | safe }}
+            <script src="/static/js/alpine.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.4/flowbite.min.js"></script>
 
-              {% if path == "home" %}
-                <!-- Netlify Identity Widget -->
-                <!-- Needed only if you are using Netlify Identity feature -->
-                <script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-              {% endif %}
-
-            </body>
-            {% include "./partials/footer.html" %}
+            {% if path == "home" %}
+              <!-- Netlify Identity Widget -->
+              <!-- Needed only if you are using Netlify Identity feature -->
+              <script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+            {% endif %}
+          {% include "./partials/footer.html" %}
           </div>
         </div>
       </div>
     </div>
   </div>
+  </body>
 </html>

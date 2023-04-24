@@ -1,5 +1,16 @@
 ---
 cards:
+  - name: Mosey Bank Unlimited
+    image: /static/img/bank-unlimited_640.png
+    captionpre: Earn unlimited 
+    caption: cash back on every purchase, every day
+    description: Earn a one-time $200 cash bonus once you spend $500 on purchases within 3 months from account opening.
+    purchaserate: 0% intro APR for 15 months; 15.49% - 25.49% variable APR after that
+    transferinfo: 15.49% - 25.49% variable APR; No Transfer Fee with this Transfer APR
+    annualfee: $0
+    cashback: 1.5%
+    creditlevel: Excellent
+    flagkey: 
   - name: Mosey Bank Flex
     image: /static/img/credit-card-1369111_640.png
     captionpre: Earn unlimited 
@@ -19,7 +30,7 @@ cards:
     purchaserate: 17.24% - 24.49% variable APR
     transferinfo: 17.24% - 24.49% variable APR; No Transfer Fee with this Transfer APR
     annualfee: $0
-    cashback: 
+    cashback: 0
     creditlevel: Excellent
     flagkey: 
   - name: Mosey Bank Kids Card
@@ -30,6 +41,6 @@ cards:
     purchaserate: 0% intro APR for 12 months; 15.24% - 24.24% variable APR after that
     transferinfo: 15.24% - 24.24% variable APR
     annualfee: $0
-    cashback: 
+    cashback: 0
     creditlevel: None
     flagkey: 
