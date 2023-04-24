@@ -27,7 +27,26 @@
       return ua;
   }
 
-  function showInventory(
+  function getInventory() {
+      var inventoryUrl = "https://fashion.optidemo.com/api/episerver/v3.0/inventory?contentId=35d41375-0052-4b52-8ca9-162f92c4c47b";
+    
+      fetch(inventoryUrl)
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (data) {
+        console.log(data);
+        return true;
+      }).catch(function(error) {
+        console.warn(error);
+        return false;
+      });
+      // const response = await fetch(inventoryUrl);
+      // const inventory = await response.json();
+      // return inventory;
+    }
+
+  async function showInventory(
     clientVersion,  
     userData,
     flagKey) {
@@ -38,14 +57,35 @@
       var ua = getUserAttributes(userData);
       var uc = getUserContext(userData, ua);
 
-      if (uc != null) {
-        var decision = uc.decide(flagKey);
-        if (decision != null && decision.enabled) {
-          userData.inventoryData = 'Available';
-          return true;
-        }
-
+      if (uc == null) {
         return false;
+      }
+
+      var decision = uc.decide(flagKey);
+      if (decision != null && decision.enabled) {
+        userData.inventoryData = 'Available';
+        var inventoryUrl = "https://fashion.optidemo.com/api/episerver/v3.0/inventory?contentId=35d41375-0052-4b52-8ca9-162f92c4c47b";
+        
+        let hasInventory = await fetch(inventoryUrl)
+        .then(res => 
+          res.json()
+        )
+        .then((data) => {
+          var warehouse = data.find(w => { return w.warehouseCode == "default" })
+          if (warehouse != null) {
+            var count = warehouse.purchaseAvailableQuantity;
+
+            if (count <= 0) {
+              return false;
+            }
+          }
+          return true;
+        }).catch((error) => {
+          console.warn(error);
+          return false;
+        });
+        
+        return hasInventory;
       }
   }</script><div class="container mx-auto flex flex-col justify-center items-center"><template x-teleport="#flagUserSection"><div x-data="{ user: $store.user} "><div class="pb-5" x-init="$watch('user.isLoggedIn', (val) => user.updateLocalStorage('is_logged_in', val))"><label class="relative inline-flex items-center cursor-pointer"><input x-model="user.isLoggedIn" class="sr-only peer" type="checkbox" x-bind:checked="user.isLoggedIn == 'true'" name="isLoggedInId" id="isLoggedInId"><div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div><span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Is Logged In</span></label></div><div class="pb-5" x-init="$watch('user.daysSinceLastOrder', (val) => user.updateLocalStorage('days_since_last_order', val))"><label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Days Since Last Order</label> <input x-model="user.daysSinceLastOrder" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" type="text" name="daysSinceLastOrderId" id="daysSinceLastOrderId"></div></div></template></div><div class="bg-white" x-data="{ user: $store.user}" x-init="intializeAttributes(user);"><div class="pt-6"><nav aria-label="Breadcrumb"><ol role="list" class="mx-auto flex max-w-2xl items-center space-x-2 px-4 sm:px-6 lg:max-w-7xl lg:px-8"><li><div class="flex items-center"><a href="#" class="mr-2 text-sm font-medium text-gray-900">Women</a> <svg width="16" height="20" viewBox="0 0 16 20" fill="currentColor" aria-hidden="true" class="h-5 w-4 text-gray-300"><path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z"/></svg></div></li><li><div class="flex items-center"><a href="#" class="mr-2 text-sm font-medium text-gray-900">Jackets</a> <svg width="16" height="20" viewBox="0 0 16 20" fill="currentColor" aria-hidden="true" class="h-5 w-4 text-gray-300"><path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z"/></svg></div></li><li class="text-sm"><a href="#" aria-current="page" class="font-medium text-gray-500 hover:text-gray-600">SUZY RAW DENIM JACKET</a></li></ol></nav><div :class="userDetails.mobileUser === true ? 'mx-auto mt-6 max-w-2xl sm:px-6' : 'mx-auto mt-6 max-w-2xl sm:px-6 lg:grid lg:max-w-7xl lg:grid-cols-3 lg:gap-x-8 lg:px-8'"><div :class="userDetails.mobileUser === true ? 'aspect-w-3 aspect-h-4 hidden overflow-hidden rounded-lg' : 'aspect-w-3 aspect-h-4 hidden overflow-hidden rounded-lg lg:block'"><img src="/static/img/hands-working-with-denim-material.jpg" alt="Two each of gray, white, and black shirts laying flat." class="h-full w-full object-cover object-center"></div><div :class="userDetails.mobileUser === true ? 'hidden' : 'hidden lg:grid lg:grid-cols-1 lg:gap-y-8'"><div class="aspect-w-3 aspect-h-2 overflow-hidden rounded-lg"><img src="/static/img/denim-jacket-3.jpg" alt="Model wearing plain black basic tee." class="h-full w-full object-cover object-center"></div><div class="aspect-w-3 aspect-h-2 overflow-hidden rounded-lg"><img src="/static/img/denim-jacket-2.jpg" alt="Model wearing plain gray basic tee." class="h-full w-full object-cover object-center"></div></div><div :class="userDetails.mobileUser === true  ? 'aspect-w-4 aspect-h-5 sm:overflow-hidden sm:rounded-lg' : 'aspect-w-4 aspect-h-5 sm:overflow-hidden sm:rounded-lg lg:aspect-w-3 lg:aspect-h-4'"><img src="/static/img/denim-jacket.jpg" alt="Model wearing plain white basic tee." class="h-full w-full object-cover object-center"></div></div><div :class="userDetails.mobileUser === true ? 'mx-auto max-w-2xl px-4 pt-10 pb-16 sm:px-6' : 'mx-auto max-w-2xl px-4 pt-10 pb-16 sm:px-6 lg:grid lg:max-w-7xl lg:grid-cols-3 lg:grid-rows-[auto,auto,1fr] lg:gap-x-8 lg:px-8 lg:pt-16 lg:pb-24'"><div :class="userDetails.mobileUser === true ? '' : 'lg:col-span-2 lg:border-r lg:border-gray-200 lg:pr-8'"><h1 class="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">SUZY RAW DENIM JACKET</h1></div><div :class="userDetails.mobileUser === true ? 'mt-4' : 'mt-4 lg:row-span-3 lg:mt-0'"><h2 class="sr-only">Product information</h2><p class="text-3xl tracking-tight text-gray-900">$290</p><div class="mt-6"><h3 class="sr-only">Reviews</h3><div class="flex items-center"><div class="flex items-center"><svg class="text-gray-900 h-5 w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"/></svg> <svg class="text-gray-900 h-5 w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"/></svg> <svg class="text-gray-900 h-5 w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"/></svg> <svg class="text-gray-900 h-5 w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"/></svg> <svg class="text-gray-200 h-5 w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"/></svg></div><p class="sr-only">4 out of 5 stars</p><a href="#" class="ml-3 text-sm font-medium text-indigo-600 hover:text-indigo-500">117 reviews</a></div></div><div class="mt-5" x-data="$store.optiSdk"><div x-data="{ userData: $store.user }"><template x-if="showInventory(
               clientVersion, 

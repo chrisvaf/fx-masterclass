@@ -19,7 +19,26 @@ path: pdp
       return ua;
   }
 
-  function showInventory(
+  function getInventory() {
+      var inventoryUrl = "https://fashion.optidemo.com/api/episerver/v3.0/inventory?contentId=35d41375-0052-4b52-8ca9-162f92c4c47b";
+    
+      fetch(inventoryUrl)
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (data) {
+        console.log(data);
+        return true;
+      }).catch(function(error) {
+        console.warn(error);
+        return false;
+      });
+      // const response = await fetch(inventoryUrl);
+      // const inventory = await response.json();
+      // return inventory;
+    }
+
+  async function showInventory(
     clientVersion,  
     userData,
     flagKey) {
@@ -30,14 +49,35 @@ path: pdp
       var ua = getUserAttributes(userData);
       var uc = getUserContext(userData, ua);
 
-      if (uc != null) {
-        var decision = uc.decide(flagKey);
-        if (decision != null && decision.enabled) {
-          userData.inventoryData = 'Available';
-          return true;
-        }
-
+      if (uc == null) {
         return false;
+      }
+
+      var decision = uc.decide(flagKey);
+      if (decision != null && decision.enabled) {
+        userData.inventoryData = 'Available';
+        var inventoryUrl = "https://fashion.optidemo.com/api/episerver/v3.0/inventory?contentId=35d41375-0052-4b52-8ca9-162f92c4c47b";
+        
+        let hasInventory = await fetch(inventoryUrl)
+        .then(res => 
+          res.json()
+        )
+        .then((data) => {
+          var warehouse = data.find(w => { return w.warehouseCode == "default" })
+          if (warehouse != null) {
+            var count = warehouse.purchaseAvailableQuantity;
+
+            if (count <= 0) {
+              return false;
+            }
+          }
+          return true;
+        }).catch((error) => {
+          console.warn(error);
+          return false;
+        });
+        
+        return hasInventory;
       }
   }
 </script>
