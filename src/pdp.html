@@ -70,6 +70,11 @@ path: pdp
             if (count <= 0) {
               return false;
             }
+            else {
+              if (decision.variables["show_amounts"] == true) {
+                userData.inventoryData = count + ' in stock';
+              }
+            }
           }
           return true;
         }).catch((error) => {
