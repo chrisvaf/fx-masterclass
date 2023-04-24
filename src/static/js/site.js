@@ -84,55 +84,6 @@ document.addEventListener('alpine:init', () => {
                 Alpine.store('optiSdk').message = 'You have entered a valid SDK Key!'
                 Alpine.store('sdkReady').isLoaded = true;
                 
-                const onConfigUpdateListener = () => {
-                    const config = optimizelyClient.getOptimizelyConfig();
-                    console.log('New datafile retrieved.');
-                    Alpine.store('optiSdk').clientVersion += 1;
-                }
-
-                optimizelyClient.notificationCenter.addNotificationListener(window.optimizelySdk.enums.NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE, onConfigUpdateListener);
-
-                const onDecision = ({ type, userId, attributes, decisionInfo }) => {
-                    // Add a DECISION Notification Listener for type FLAG
-                    if (type === 'flag') {
-                      // Access information about feature, for example, key and enabled status
-                      console.log(type);
-                      // Send data to analytics provider here
-                      
-                      if (decisionInfo['enabled']) {
-                        zaius.event('Flag', {
-                            action: 'Enabled', 
-                            flag_key: decisionInfo['flagKey'],
-                            experiment_variation_name: decisionInfo['variationKey'],
-                            campaign: 'Variation: ' + decisionInfo['variationKey']
-                        });
-                        }
-                    }
-                }
-                  
-                optimizelyClient.notificationCenter.addNotificationListener(window.optimizelySdk.enums.NOTIFICATION_TYPES.DECISION, onDecision);
-
-                const onLogEvent = (logEvent) => {
-                    // process the event here (send to analytics provider, audit/inspect data)
-                    var tags = logEvent.params.visitors[0].snapshots[0].events[0].tags;
-
-                    if (tags != null) {
-                         if (tags.event_type === 'product') {
-                            var productId = tags.product_id;
-                            zaius.event(tags.event_type, {
-                                action: logEvent.params.visitors[0].snapshots[0].events[0].key,
-                                product_id: productId 
-                            });
-                        }
-                        else {
-                            zaius.event(tags.event_type, {
-                                action: logEvent.params.visitors[0].snapshots[0].events[0].key
-                            });
-                        }
-                    }
-                }
-                  
-                optimizelyClient.notificationCenter.addNotificationListener(window.optimizelySdk.enums.NOTIFICATION_TYPES.LOG_EVENT, onLogEvent);
                 });
             });
 
@@ -153,7 +104,7 @@ document.addEventListener('alpine:init', () => {
             }
         }
         });
-        
+
     Alpine.store('user', {
         init() {
             initializeUserAttribute(this, 'mobileUser', false, localStorage.getItem('is_mobile_user') == 'true');
