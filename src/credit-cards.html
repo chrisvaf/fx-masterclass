@@ -160,12 +160,14 @@ path: credit-cards
                             <a 
                               href="#" 
                               class="mt-2 block rounded-md bg-blue-700 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+                              @click="trackEvent('{{card.flagkey}}', 'viewed_card_details')"
                             >Details</a>
                         </div>
                         <div class="w-1/2">
                             <a 
                               href="#" 
                               class="mt-2 block rounded-md bg-blue-700 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+                              @click="trackEvent('{{card.flagkey}}', 'started_application')"
                             >Apply Now</a>
                         </div>
                       </div>

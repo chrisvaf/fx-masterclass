@@ -26,6 +26,28 @@ function getUserContext(userData, ua) {
     return Alpine.store('optiSdk').client.createUserContext(userData.uid, ua);
 }
 
+function trackEvent(flagkey, eventKey) {
+    if (flagkey == '') {
+        return;
+    }
+
+    var optiSdk = Alpine.store('optiSdk');
+
+    if (optiSdk != null) {
+        if (optiSdk.client != null) {
+            var userStore = Alpine.store('user');
+
+            if (userStore != null) {
+                var userId = userStore.uid;
+                var uc = optiSdk.client.createUserContext(userId, null);
+                if (uc != null) {
+                    uc.trackEvent(eventKey);
+                }
+            }
+        }
+    }
+}
+
 function checkLocalStorage(key, defaultVal) {
     var storageKey = localStorage.getItem(key);
     if (storageKey == null) {
