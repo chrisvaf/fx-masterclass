@@ -4,15 +4,15 @@ title: Credit Cards
 path: credit-cards
 ---
 <script>
-  function intializeAttributes(user) {
-    initializeUserAttribute(user, 'existingCardholder', 'false', localStorage.getItem('existing_cardholder'));
-    initializeUserAttribute(user, 'flexCardholder', 'false', localStorage.getItem('flex_cardholder'));
-  }
-
   function showCard(
     clientVersion, 
     userData, 
-    flagKey) {
+    flagKey,
+    cardFee, 
+    cb) {
+      userData.fee = cardFee;
+      userData.cashbackPct = cb;
+
       if (flagKey === '') {
         return true;
       }
@@ -32,6 +32,8 @@ path: credit-cards
         var decision = uc.decide(flagKey);
         console.log(decision.enabled);
         if (decision != null && decision.enabled) {
+          userData.fee = '$' + decision.variables["annual_fee"];
+          userData.cashbackPct = decision.variables["cashback_percent"] + '%';
           return true;
         }
       }
@@ -40,53 +42,17 @@ path: credit-cards
   }
 </script>
 <div class="container mx-auto flex flex-col justify-center items-center">
-  <template x-teleport="#flagUserSection">
-    <div x-data="{ user: $store.user} " x-init="intializeAttributes(user);">
-      <div
-          class="md:flex md:items-center mb-3">
-          <div
-              x-init="$watch('user.existingCardholder', (val) => user.updateLocalStorage('existing_cardholder', val))">
-              <label class="relative inline-flex items-center cursor-pointer">
-              <input 
-                  x-model="user.existingCardholder" 
-                  class="sr-only peer"
-                  type="checkbox" 
-                  x-bind:checked="user.existingCardholder == 'true'"
-                  name="existingCardholderId" 
-                  id="existingCardholderId">
-              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-              <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Existing Cardholder</span>
-              </label>
-          </div>
-      </div>
-      <div
-          class="md:flex md:items-center mb-3">
-          <div
-              x-init="$watch('user.flexCardholder', (val) => user.updateLocalStorage('flex_cardholder', val))">
-              <label class="relative inline-flex items-center cursor-pointer">
-              <input 
-                  x-model="user.flexCardholder" 
-                  class="sr-only peer"
-                  type="checkbox" 
-                  x-bind:checked="user.flexCardholder == 'true'"
-                  name="flexCardholderId" 
-                  id="flexCardholderId">
-              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-              <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Flex Cardholder</span>
-              </label>
-          </div>
-      </div>
-    </div>
-  </template>
   {% if creditcards.cards %}
-  <div>
+  <div x-data="{ userData: $store.user }">
     <div x-data="$store.optiSdk">
       {% for card in creditcards.cards %}
       <template 
           x-if="showCard(
             clientVersion, 
             userDetails,
-            '{{card.flagkey}}')">
+            '{{card.flagkey}}',
+            '{{card.annualfee}}', 
+            '{{card.cashback}}')">
           <div class="bg-white py-4 sm:py-32">
             <div class="mx-auto max-w-7xl px-6 lg:px-8">
               <div 
@@ -94,7 +60,7 @@ path: credit-cards
                 <div 
                   :class="userDetails.mobileUser === true ? 'p-8 sm:p-10' : 'p-8 sm:p-10 lg:w-2/3'">
                   <h3 class="text-2xl font-bold tracking-tight text-gray-900">{{card.name}}</h3>
-                  <h4 class="text-xl font-bold text-gray-800" x-text="'{{card.captionpre}} ' + '{{card.cashback}}' + ' {{card.caption}}'"></h4>
+                  <h4 class="text-xl font-bold text-gray-800" x-text="'{{card.captionpre}} ' + userData.cashbackPct + ' {{card.caption}}'"></h4>
                   <p class="mt-3 text-base leading-7 text-gray-600">{{card.description}}</p>
                   <ul role="list" class="mt-4 grid grid-cols-1 gap-4 text-sm leading-1 text-gray-600 sm:grid-cols-2 sm:gap-2">
                     <li class="flex gap-x-3">
@@ -117,7 +83,7 @@ path: credit-cards
                       </svg>
                       <p
                         class="bg-blue-700 text-white p-1 rounded" 
-                        x-text="'{{card.annualfee}}'"></p>
+                        x-text="userData.fee"></p>
                     </li>
           
                     <li class="flex gap-x-3">
