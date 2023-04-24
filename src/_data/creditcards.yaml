@@ -1,0 +1,35 @@
+---
+cards:
+  - name: Mosey Bank Flex
+    image: /static/img/credit-card-1369111_640.png
+    captionpre: Earn unlimited 
+    caption: cash back on every purchase, every day
+    description: You’ll earn the usual Flex rewards, but won’t be eligible for bonus cash or 0% intro APR.
+    purchaserate: 26.99% variable APR
+    transferinfo: 26.99% variable APR; No Transfer Fee with this Transfer APR
+    annualfee: $0
+    cashback: 1.5%
+    creditlevel: Good
+    flagkey: 
+  - name: Mosey Bank Preferred
+    image: /static/img/bank-1300155_640.png
+    captionpre: 
+    caption: Earn unlimited 2X miles per dollar on every purchase, every day
+    description: Earn 100,000 bonus miles when you spend $20,000 on purchases in the first 12 months from account opening, or still earn 50,000 miles if you spend $3,000 on purchases in the first 3 months.
+    purchaserate: 17.24% - 24.49% variable APR
+    transferinfo: 17.24% - 24.49% variable APR; No Transfer Fee with this Transfer APR
+    annualfee: $0
+    cashback: 
+    creditlevel: Excellent
+    flagkey: 
+  - name: Mosey Bank Kids Card
+    image: /static/img/bank-2024432_640.png
+    captionpre: 
+    caption: Get 5% Earnings on your first $5,000 in purchases every year. Then get unlimited 2% Earnings on purchases after that.
+    description: Plus, your Earnings don’t expire on an open Account, and there’s no limit to what you can earn.
+    purchaserate: 0% intro APR for 12 months; 15.24% - 24.24% variable APR after that
+    transferinfo: 15.24% - 24.24% variable APR
+    annualfee: $0
+    cashback: 
+    creditlevel: None
+    flagkey: 

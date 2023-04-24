@@ -1,0 +1,106 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta http-equiv="x-ua-compatible" content="ie=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Inventory</title><link rel="stylesheet" type="text/css" href="/static/css/style.css"><link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.4/flowbite.min.css" rel="stylesheet"><script src="https://unpkg.com/@optimizely/optimizely-sdk/dist/optimizely.browser.umd.min.js"></script></head><body><script>function checkLocalStorage(key, defaultVal) {
+        var storageKey = localStorage.getItem(key);
+        if (storageKey == null) {
+          localStorage.setItem(key, defaultVal);
+        }
+      }
+
+      document.addEventListener('alpine:init', () => {
+        checkLocalStorage('userId', 'User123');
+        
+          let params = new URLSearchParams(window.location.search);
+          let sdkFromQs = params.get('sdkkey');
+          if (sdkFromQs != null) {
+            localStorage.setItem('sdk', sdkFromQs);
+          }
+          
+          Alpine.store('sdkReady', {
+            isLoaded: false
+          });
+
+          Alpine.store('optiSdk', {
+            init() {
+              this.fetchSdk(localStorage.getItem('sdk'))
+            },
+            client: null,
+            clientVersion: 0,
+            message: '',
+            isError: false,
+            key: localStorage.getItem('sdk'),
+            fetchSdk(val) {
+              if (val != sdkFromQs) {
+                console.log(window.location.pathname + "?sdkkey=" + val);
+                window.location = window.location.pathname + "?sdkkey=" + val;
+              }
+              
+              var currentKey = localStorage.getItem('sdk');
+
+              if (currentKey != val) {
+                localStorage.setItem('sdk', val);
+                window.optimizelyDatafile = val;
+              }
+
+              if (val != null && val !== '') {
+                // initializeOpti(val);
+                console.log('Optimizely SDK Key: ' + val);
+                let scriptElement = document.createElement("script");
+                scriptElement.id = "optiDf";
+                scriptElement.setAttribute("src", "https://cdn.optimizely.com/datafiles/" + val + ".json/tag.js");
+                document.body.appendChild(scriptElement);
+                scriptElement.addEventListener("load", () => {
+                  console.log("SDK Loaded!");
+                  
+                  let optimizelyClient = window.optimizelySdk.createInstance({
+                      //datafile: window.optimizelyDatafile,
+                      sdkKey: val,
+                      datafileOptions:  {
+                        autoUpdate: true,
+                        updateInterval: 1000
+                      }
+                  });
+
+                  optimizelyClient.onReady().then(() => {
+                    // optimizelyClient is ready to use, with datafile downloaded from the Optimizely CDN
+                    Alpine.store('optiSdk').client = optimizelyClient;
+                    Alpine.store('optiSdk').isError = false;
+                    Alpine.store('optiSdk').message = 'You have entered a valid SDK Key!'
+                    Alpine.store('sdkReady').isLoaded = true;
+                    
+                    const onConfigUpdateListener = () => {
+                      const config = optimizelyClient.getOptimizelyConfig();
+                      console.log('New datafile retrieved.');
+                      Alpine.store('optiSdk').clientVersion += 1;
+                    }
+
+                    optimizelyClient.notificationCenter.addNotificationListener(window.optimizelySdk.enums.NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE, onConfigUpdateListener);
+                  });
+                });
+
+                scriptElement.addEventListener("error", () => {
+                  console.log("ERROR loading SDK");
+                  Alpine.store('optiSdk').message = 'Invalid Key.  Enter another key and click "Update Key"'
+                  Alpine.store('optiSdk').isError = true;
+                  Alpine.store('sdkReady').isLoaded = false;
+                });
+                /* console.log(optimizely);
+                client = optimizely.createInstance({
+                  sdkKey: val, // Provide the sdkKey of your desired environment here
+                });
+                client.onReady().then(() => {
+                  // optimizelyClientInstance is ready to use, with datafile downloaded from the
+                  // Optimizely CDN
+                }); */
+              }
+            }
+          });
+
+          Alpine.store('user', {
+            uid: localStorage.getItem('userId'),
+            updateLocalStorage(key, val) {
+              localStorage.setItem(key, val);
+            },
+            updateUId(val) {
+              localStorage.setItem('userId', val);
+            }
+          });
+        })</script><header><nav class="bg-white border-gray-200 px-4 lg:px-6 py-2.5 dark:bg-gray-800"><div class="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl"><a href="/" class="flex items-center"><img src="/static/img/mosey-logo.svg" class="mr-3 h-6 sm:h-9" alt="Flowbite Logo"> <span class="self-center text-xl font-semibold whitespace-nowrap dark:text-white"></span></a><div x-data="$store.user" class="flex items-center lg:order-2"><div><span x-data="{userModal: false}"><div x-show="userModal" id="userModalWindow" tabindex="-1" class="absolute inset-0 flex items-center justify-center bg-gray-700 bg-opacity-50"><div @click.away="userModal = false" class="max-w-sm p-6 bg-white border shadow-lg rounded-md"><div class="flex items-center justify-between p-5"><h3 class="text-2xl">User Attributes</h3><svg @click="userModal=false" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div x-data="{ user: $store.user} "><div id="flagUserSection"></div><div class="md:flex md:items-center mb-3"><div x-init="$watch('user.regionState', (val) => user.updateLocalStorage('region_state', val))"><label class="relative inline-flex items-center cursor-pointer">State</label> <input x-model="user.regionState" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" id="inline-sdk-key" type="text" name="regionStateId" id="regionStateId"></div></div><div id="userIdSection" class="md:flex md:items-center mb-3"></div></div></div></div><button type="button" @click="userModal = !userModal" id="userButton" class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Settings</button></span> <span x-data="{detailsModal: false}"><div x-show="detailsModal" id="detailsModalWindow" tabindex="-1" class="absolute inset-0 flex items-center justify-center bg-gray-700 bg-opacity-50"><div @click.away="detailsModal = false" class="max-w-sm p-6 bg-white border shadow-lg rounded-md"><div class="flex items-center justify-between p-5"><h3 class="text-2xl">SDK Key</h3><svg @click="detailsModal=false" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div x-data="{ sdk: $store.optiSdk }"><div class="md:flex md:items-center mb-6"><div class="md:w-1/3"><label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-sdk-key">SDK Key</label></div><div class="md:w-2/3" x-init="$watch('sdk.key', (val) => sdk.fetchSdk(val))"><input x-model.debounce.2000="sdk.key" class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="inline-sdk-key" type="text" placeholder="Enter your SDK Key" name="sdkKey" id="sdkKey"></div></div><div class="md:flex md:items-center mb-6"><div class="md:w-1/3"></div><label class="md:w-2/3 block text-gray-500 font-bold"><span id="sdkStatus" x-text="sdk.message" x-bind:class="sdk.isError ? 'text-sm text-red-500' : 'text-sm text-green-500'"></span></label></div><div class="md:flex md:items-center"><div class="md:w-1/3"></div><div class="md:w-2/3"><button class="shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded" type="button">Update Key</button></div></div></div></div></div><button type="button" @click="detailsModal = !detailsModal" id="detailsButton" class="py-2.5 px-5 mr-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Details</button></span><template x-teleport="#userIdSection"><span x-init="$watch('uid', (val) => updateUId(val))"><label class="relative inline-flex items-center cursor-pointer">User ID</label> <input class="mt-2 block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" type="text" id="userId" x-model.debounce.500="uid"></span></template></div><button data-collapse-toggle="mobile-menu-2" type="button" class="inline-flex items-center p-2 ml-1 text-sm text-gray-500 rounded-lg lg:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="mobile-menu-2" aria-expanded="false"><span class="sr-only">Open main menu</span> <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg> <svg class="hidden w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg></button></div><div class="hidden justify-between items-center w-full lg:flex lg:w-auto lg:order-1" id="mobile-menu-2"><div x-data="$store.sdkReady" class="flex-1"><div x-cloak x-show="isLoaded"><ul class="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0"><li><a href="/credit-cards" class="block py-2 pr-4 pl-3 text-black rounded bg-primary-700 lg:bg-transparent lg:text-primary-700 lg:p-0 dark:text-white" aria-current="page">Credit Cards</a></li><li><a href="/pdp" class="block py-2 pr-4 pl-3 text-black rounded bg-primary-700 lg:bg-transparent lg:text-primary-700 lg:p-0 dark:text-white" aria-current="page">PDP</a></li><li><a href="/inventory" class="block py-2 pr-4 pl-3 text-black rounded bg-primary-700 lg:bg-transparent lg:text-primary-700 lg:p-0 dark:text-white" aria-current="page">Inventory</a></li><li><a href="#" class="block py-2 pr-4 pl-3 text-black rounded bg-primary-700 lg:bg-transparent lg:text-primary-700 lg:p-0 dark:text-white" aria-current="page">Demo 4</a></li></ul></div></div></div></div></nav></header><div class="bg-white py-24 sm:py-32"><div class="mx-auto max-w-7xl px-6 lg:px-8"><div class="rounded-md mx-auto mt-16 rounded-3xl ring-1 ring-gray-200 sm:mt-20 lg:mx-0 lg:flex lg:max-w-none"><div class="p-8 sm:p-10 lg:flex-auto"><h3 class="text-2xl font-bold tracking-tight text-gray-900">Mosey Bank Unlimited</h3><h4 class="text-xl font-bold text-gray-800">Earn unlimited 1.5% cash back on every purchase, every day</h4><p class="mt-3 text-base leading-7 text-gray-600">Earn a one-time $200 cash bonus once you spend $500 on purchases within 3 months from account opening</p><ul role="list" class="mt-4 grid grid-cols-1 gap-4 text-sm leading-1 text-gray-600 sm:grid-cols-2 sm:gap-2"><li class="flex gap-x-3"><svg class="h-6 w-5 flex-none text-indigo-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg> 0% intro APR for 15 months; 15.49% - 25.49% variable APR after that</li><li class="flex gap-x-3"><svg class="h-6 w-5 flex-none text-indigo-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg> 15.49% - 25.49% variable APR; No Transfer Fee with this Transfer APR</li><li class="flex gap-x-3"><svg class="h-6 w-5 flex-none text-indigo-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg> $0</li><li class="flex gap-x-3"><svg class="h-6 w-5 flex-none text-indigo-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg> Excellent</li></ul></div><div class="mt-2 p-2 lg:mt-0 lg:w-full lg:max-w-md lg:flex-shrink-0"><div class="rounded-2xl bg-gray-50 py-10 text-center ring-1 ring-inset ring-gray-900/5 lg:flex lg:flex-col lg:justify-center lg:py-4"><div class="mx-auto max-w-xs px-8"><p><img src="/static/img/credit-card-1369111_640.png"></p><div class="flex space-x-4"><div class="w-1/2"><a href="#" class="mt-2 block rounded-md bg-blue-700 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Details</a></div><div class="w-1/2"><a href="#" class="mt-2 block rounded-md bg-blue-700 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Apply Now</a></div></div></div></div></div></div></div></div><footer class="fixed bottom-0 text-center w-full py-4"><small class="text-gray-500">Copyright © Feature Experimentation Demo 2020. Made with ❤ by <a href="#" target="_blank" class="underline">Your Optimizely Solution Architects</a> • <a href="https://github.com/chrisvaf/fx-demos" class="underline" target="_blank" rel="noopener">View on Github</a></small></footer><script src="/static/js/alpine.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.4/flowbite.min.js"></script></body></html>
