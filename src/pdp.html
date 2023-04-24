@@ -3,6 +3,44 @@ layout: default
 title: Product Detail Page
 path: pdp
 ---
+<script>
+  function intializeAttributes(user) {
+    initializeUserAttribute(user, 'daysSinceLastOrder', '0', localStorage.getItem('days_since_last_order'));
+  }
+
+  function getUserAttributes(userData) {
+    var ua = { 
+        user_id: userData.uid, 
+        region_state: userData.regionState,
+        is_mobile_user: userData.mobileUser === true,
+        days_since_last_order: parseInt(userData.daysSinceLastOrder)
+      };
+
+      return ua;
+  }
+
+  function showInventory(
+    clientVersion,  
+    userData,
+    flagKey) {
+      if (flagKey === '') {
+        return false;
+      }
+      
+      var ua = getUserAttributes(userData);
+      var uc = getUserContext(userData, ua);
+
+      if (uc != null) {
+        var decision = uc.decide(flagKey);
+        if (decision != null && decision.enabled) {
+          userData.inventoryData = 'Available';
+          return true;
+        }
+
+        return false;
+      }
+  }
+</script>
 <div class="container mx-auto flex flex-col justify-center items-center">
   <template x-teleport="#flagUserSection">
     <div x-data="{ user: $store.user} ">
@@ -38,7 +76,8 @@ path: pdp
 
 <div
   class="bg-white"
-  x-data="{ user: $store.user} " 
+  x-data="{ user: $store.user}" 
+  x-init="intializeAttributes(user);"
 >
   <div class="pt-6">
     <nav aria-label="Breadcrumb">
@@ -131,6 +170,18 @@ path: pdp
             </div>
             <p class="sr-only">4 out of 5 stars</p>
             <a href="#" class="ml-3 text-sm font-medium text-indigo-600 hover:text-indigo-500">117 reviews</a>
+          </div>
+        </div>
+
+        <div class="mt-5" x-data="$store.optiSdk">
+          <div x-data="{ userData: $store.user }">
+            <template x-if="showInventory(
+              clientVersion, 
+              userData,
+              'inventory_on_pdp')"
+            >
+              <h3 class="text-sm font-medium text-green-400" x-text="userData.inventoryData"></h3>
+            </template>
           </div>
         </div>
 
