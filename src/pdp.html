@@ -4,6 +4,28 @@ title: Product Detail Page
 path: pdp
 ---
 <script>
+  async function getProductDetails() {
+    var productUrl = "https://fashion.optidemo.com/en/fashion/womens/womens-jackets/sku-41136685";
+        
+    let productDetails = await fetch(productUrl, {
+      headers: {
+        "Accept-Language": "en",
+        "Accept": "application/json"
+      }
+    })
+    .then(res => 
+      res.json()
+    )
+    .then((data) => {
+      return data;
+    }).catch((error) => {
+      console.warn(error);
+      return error
+    });
+
+    return productDetails;
+  }
+
   function intializeAttributes(user) {
     initializeUserAttribute(user, 'daysSinceLastOrder', '0', localStorage.getItem('days_since_last_order'));
   }
@@ -18,25 +40,6 @@ path: pdp
 
       return ua;
   }
-
-  function getInventory() {
-      var inventoryUrl = "https://fashion.optidemo.com/api/episerver/v3.0/inventory?contentId=35d41375-0052-4b52-8ca9-162f92c4c47b";
-    
-      fetch(inventoryUrl)
-      .then(function (response) {
-        return response.json();
-      })
-      .then(function (data) {
-        console.log(data);
-        return true;
-      }).catch(function(error) {
-        console.warn(error);
-        return false;
-      });
-      // const response = await fetch(inventoryUrl);
-      // const inventory = await response.json();
-      // return inventory;
-    }
 
   async function showInventory(
     clientVersion,  
@@ -63,7 +66,8 @@ path: pdp
           res.json()
         )
         .then((data) => {
-          var warehouse = data.find(w => { return w.warehouseCode == "default" })
+          // var warehouse = data.find(w => { return w.warehouseCode == "default" })
+          var warehouse = data.find(w => { return w.warehouseCode == "Amsterdam" })
           if (warehouse != null) {
             var count = warehouse.purchaseAvailableQuantity;
 
@@ -122,8 +126,7 @@ path: pdp
 <div
   class="bg-white"
   x-data="{ user: $store.user}" 
-  x-init="intializeAttributes(user);"
->
+  x-init="intializeAttributes(user);">
   <div class="pt-6">
     <nav aria-label="Breadcrumb">
       <ol role="list" class="mx-auto flex max-w-2xl items-center space-x-2 px-4 sm:px-6 lg:max-w-7xl lg:px-8">
@@ -175,17 +178,18 @@ path: pdp
 
     <!-- Product info -->
     <div 
+      x-data="{productDetails: {productDetails:[]}}" x-init="productDetails = await getProductDetails();"
       :class="userDetails.mobileUser === true ? 'mx-auto max-w-2xl px-4 pt-10 pb-16 sm:px-6' : 'mx-auto max-w-2xl px-4 pt-10 pb-16 sm:px-6 lg:grid lg:max-w-7xl lg:grid-cols-3 lg:grid-rows-[auto,auto,1fr] lg:gap-x-8 lg:px-8 lg:pt-16 lg:pb-24'">
       <div 
         :class="userDetails.mobileUser === true ? '' : 'lg:col-span-2 lg:border-r lg:border-gray-200 lg:pr-8'">
-        <h1 class="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">SUZY RAW DENIM JACKET</h1>
+        <h1 
+        class="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl" x-text="productDetails.displayName ? productDetails.displayName.value : ''"></h1>
       </div>
-
       <!-- Options -->
       <div 
         :class="userDetails.mobileUser === true ? 'mt-4' : 'mt-4 lg:row-span-3 lg:mt-0'">
         <h2 class="sr-only">Product information</h2>
-        <p class="text-3xl tracking-tight text-gray-900">$290</p>
+        <p class="text-3xl tracking-tight text-gray-900" x-text="'$290'"></p>
 
         <!-- Reviews -->
         <div class="mt-6">
