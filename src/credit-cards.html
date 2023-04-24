@@ -96,7 +96,7 @@ path: credit-cards
     </div>
   </template>
   {% if creditcards.cards %}
-  <div x-data="{ userData: $store.user }" x-init="intializeAttributes(user);">
+  <div x-data="{ userData: $store.user }" x-init="intializeAttributes(userData);">
     <div x-data="$store.optiSdk">
       {% for card in creditcards.cards %}
       <template 
